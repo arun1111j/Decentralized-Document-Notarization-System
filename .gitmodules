@@ -7,3 +7,4 @@
 [submodule "prototype"]
 	path = prototype
 	url = https://github.com/arun1111j/ddn-prototype.git
+	branch=main
