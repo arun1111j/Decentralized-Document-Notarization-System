@@ -1,0 +1,6 @@
+[submodule "document-notarization-frontend"]
+	path = document-notarization-frontend
+	url = https://github.com/arun1111j/ddn-frontend.git
+[submodule "document-notarization-backend"]
+	path = document-notarization-backend
+	url = https://github.com/arun1111j/ddn-backend.git

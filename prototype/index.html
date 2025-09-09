@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Document Notarization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.2.0/dist/web3.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .document-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .service-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background-color: #10B981;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Decentralized Document Notarization</h1>
+            <p class="text-lg text-gray-600">Securely notarize and verify documents using IPFS and Blockchain</p>
+
+            <div class="mt-6 flex justify-center flex-wrap">
+                <span class="service-badge">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Ethereum Blockchain
+                </span>
+                <span class="service-badge">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                    IPFS Storage
+                </span>
+                <span class="service-badge">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    Secure & Immutable
+                </span>
+            </div>
+        </header>
+
+        <!-- Connection Status -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Service Connections</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                        <h3 class="font-medium">Ethereum Blockchain</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">Connected to Ethereum Mainnet via Infura</p>
+                    <div class="mt-2">
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Network ID: 1</span>
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded ml-2">Latest Block: #17568043</span>
+                    </div>
+                </div>
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                        <h3 class="font-medium">IPFS Storage</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">Connected to IPFS via Infura</p>
+                    <div class="mt-2">
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Pinning enabled</span>
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded ml-2">Gateway: ipfs.io</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
+            <button class="tab-button flex-1 py-4 px-6 font-medium text-center active" data-tab="notarize">Notarize Document</button>
+            <button class="tab-button flex-1 py-4 px-6 font-medium text-center" data-tab="verify">Verify Document</button>
+            <button class="tab-button flex-1 py-4 px-6 font-medium text-center" data-tab="documents">My Documents</button>
+        </div>
+
+        <!-- Notarize Tab -->
+        <div id="notarize-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Notarize New Document</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Document</label>
+                        <div class="flex items-center">
+                            <label for="file-input" class="cursor-pointer mr-4">
+                                <div class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors">
+                                    Choose File
+                                </div>
+                                <input id="file-input" type="file" class="hidden" onchange="handleFileSelect(event)"/>
+                            </label>
+                            <span id="file-name" class="text-gray-600">No file selected</span>
+                        </div>
+                    </div>
+
+                    <div id="file-preview" class="bg-gray-50 p-4 rounded-lg hidden">
+                        <h3 class="font-medium text-gray-700 mb-2">Document Preview</h3>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span id="preview-name"></span>
+                            <span id="preview-size" class="ml-auto"></span>
+                        </div>
+                    </div>
+
+                    <button onclick="simulateNotarization()" class="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+                        <div id="notarize-spinner" class="spinner hidden"></div>
+                        <span id="notarize-text">Notarize Document</span>
+                    </button>
+
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-medium text-blue-800 mb-2">How it works</h3>
+                        <p class="text-blue-700 text-sm">
+                            Your document will be uploaded to IPFS for secure storage, and a cryptographic hash of the document will be permanently stored on the Ethereum blockchain. This creates an immutable proof of your document's existence at this point in time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verify Tab -->
+        <div id="verify-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Verify Document</h2>
+
+                <div id="verification-form">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Document to Verify</label>
+                            <div class="flex items-center">
+                                <label for="verify-file-input" class="cursor-pointer mr-4">
+                                    <div class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors">
+                                        Choose File
+                                    </div>
+                                    <input id="verify-file-input" type="file" class="hidden" onchange="handleVerifyFileSelect(event)"/>
+                                </label>
+                                <span id="verify-file-name" class="text-gray-600">No file selected</span>
+                            </div>
+                        </div>
+
+                        <button onclick="simulateVerification()" class="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+                            <div id="verify-spinner" class="spinner hidden"></div>
+                            <span id="verify-text">Verify Document</span>
+                        </button>
+
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="font-medium text-blue-800 mb-2">Verification Process</h3>
+                            <p class="text-blue-700 text-sm">
+                                The system will hash your document and check if the hash exists on the blockchain. If it does, the document is verified as authentic and unaltered since its notarization.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="verification-result" class="hidden mt-8">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Verification Result</h3>
+                    <div id="result-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div id="documents-tab" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">My Notarized Documents</h2>
+
+                <div id="documents-list">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Example Documents -->
+                        <div class="document-card bg-gray-50 rounded-lg p-5 border border-gray-200">
+                            <div class="flex items-start mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="font-medium text-gray-900 truncate">Contract_Agreement.pdf</h3>
+                                    <p class="text-sm text-gray-500">2023-10-15 14:30:22</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Hash:</span>
+                                    <p class="font-mono text-xs truncate">0x4a8c5f3e7d...b9a2c1e3d2</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">IPFS CID:</span>
+                                    <p class="font-mono text-xs truncate">QmXoypizjW3W...nL72vedxjQk</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Block:</span>
+                                    <p class="font-mono text-xs">#17567342</p>
+                                </div>
+                            </div>
+                            <button onclick="simulateVerificationForDocument('Contract_Agreement.pdf', '0x4a8c5f3e7d...b9a2c1e3d2')" class="mt-4 w-full py-2 text-sm bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">
+                                Verify Document
+                            </button>
+                        </div>
+
+                        <div class="document-card bg-gray-50 rounded-lg p-5 border border-gray-200">
+                            <div class="flex items-start mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="font-medium text-gray-900 truncate">Property_Deed.docx</h3>
+                                    <p class="text-sm text-gray-500">2023-10-16 09:15:47</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Hash:</span>
+                                    <p class="font-mono text-xs truncate">0x7f21a9e4b5...c8d3e2f1a9</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">IPFS CID:</span>
+                                    <p class="font-mono text-xs truncate">QmY7UjK9oL2...pL83wefxjRm</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Block:</span>
+                                    <p class="font-mono text-xs">#17567891</p>
+                                </div>
+                            </div>
+                            <button onclick="simulateVerificationForDocument('Property_Deed.docx', '0x7f21a9e4b5...c8d3e2f1a9')" class="mt-4 w-full py-2 text-sm bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">
+                                Verify Document
+                            </button>
+                        </div>
+
+                        <div class="document-card bg-gray-50 rounded-lg p-5 border border-gray-200">
+                            <div class="flex items-start mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="font-medium text-gray-900 truncate">Patent_Application.pdf</h3>
+                                    <p class="text-sm text-gray-500">2023-10-17 16:45:33</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Hash:</span>
+                                    <p class="font-mono text-xs truncate">0x9b34c7d8e1...f2a3b4c5d6</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">IPFS CID:</span>
+                                    <p class="font-mono text-xs truncate">QmZ8VkL0pM3...qM94xfgykSn</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Block:</span>
+                                    <p class="font-mono text-xs">#17568012</p>
+                                </div>
+                            </div>
+                            <button onclick="simulateVerificationForDocument('Patent_Application.pdf', '0x9b34c7d8e1...f2a3b4c5d6')" class="mt-4 w-full py-2 text-sm bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">
+                                Verify Document
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How it Works Section -->
+        <div class="mt-12 bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">How to Set Up Your Decentralized Notarization System</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium text-gray-800 mb-2">1. Create Infura Account</h3>
+                    <p class="text-gray-600 text-sm mb-4">Go to <a href="https://infura.io/" class="text-blue-600 hover:underline">infura.io</a> and create a free account. Infura provides access to Ethereum and IPFS without running your own nodes.</p>
+
+                    <h3 class="font-medium text-gray-800 mb-2">2. Create Ethereum Project</h3>
+                    <p class="text-gray-600 text-sm mb-4">In the Infura dashboard, create a new Ethereum project. Select the network you want to use (Mainnet for production, Goerli or Sepolia for testing).</p>
+
+                    <h3 class="font-medium text-gray-800 mb-2">3. Create IPFS Project</h3>
+                    <p class="text-gray-600 text-sm">Create a separate IPFS project in Infura. This will give you API keys and endpoints for IPFS storage.</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-800 mb-2">4. Get API Keys</h3>
+                    <p class="text-gray-600 text-sm mb-4">Copy your Project ID and API Key secrets from both Ethereum and IPFS projects. These will be used to connect your application to the services.</p>
+
+                    <h3 class="font-medium text-gray-800 mb-2">5. Integrate with Web3</h3>
+                    <p class="text-gray-600 text-sm mb-4">Use a library like Web3.js in your frontend or backend to connect to Ethereum via the Infura endpoint.</p>
+
+                    <h3 class="font-medium text-gray-800 mb-2">6. Deploy Smart Contract</h3>
+                    <p class="text-gray-600 text-sm">Write and deploy a smart contract to handle the document notarization logic on the Ethereum blockchain.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab handling
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active tab button
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Show selected tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                const tabName = button.getAttribute('data-tab');
+                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            });
+        });
+
+        // File selection handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('file-name').textContent = file.name;
+                document.getElementById('preview-name').textContent = file.name;
+                document.getElementById('preview-size').textContent = `${(file.size / 1024).toFixed(2)} KB`;
+                document.getElementById('file-preview').classList.remove('hidden');
+            }
+        }
+
+        function handleVerifyFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('verify-file-name').textContent = file.name;
+            }
+        }
+
+        // Simulate notarization process
+        function simulateNotarization() {
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const spinner = document.getElementById('notarize-spinner');
+            const buttonText = document.getElementById('notarize-text');
+
+            spinner.classList.remove('hidden');
+            buttonText.textContent = 'Notarizing...';
+
+            // Simulate the notarization process
+            setTimeout(() => {
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Notarize Document';
+
+                // Show success message
+                alert('Document successfully notarized!\n\n' +
+                    'Document hash: 0x' + Math.random().toString(16).substr(2, 64) + '\n' +
+                    'IPFS CID: Qm' + Math.random().toString(16).substr(2, 44) + '\n' +
+                    'Transaction: 0x' + Math.random().toString(16).substr(2, 64) + '\n' +
+                    'Block: #' + Math.floor(Math.random() * 17500000 + 500000));
+
+                // Reset form
+                fileInput.value = '';
+                document.getElementById('file-name').textContent = 'No file selected';
+                document.getElementById('file-preview').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Simulate verification process
+        function simulateVerification() {
+            const fileInput = document.getElementById('verify-file-input');
+            if (!fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const spinner = document.getElementById('verify-spinner');
+            const buttonText = document.getElementById('verify-text');
+
+            spinner.classList.remove('hidden');
+            buttonText.textContent = 'Verifying...';
+
+            // Simulate the verification process
+            setTimeout(() => {
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Verify Document';
+
+                // Show verification result
+                const isVerified = Math.random() > 0.2; // 80% chance of verification
+                showVerificationResult(isVerified, fileInput.files[0].name);
+
+                // Reset form
+                fileInput.value = '';
+                document.getElementById('verify-file-name').textContent = 'No file selected';
+            }, 2000);
+        }
+
+        function simulateVerificationForDocument(name, hash) {
+            const spinner = document.getElementById('verify-spinner');
+            const buttonText = document.getElementById('verify-text');
+
+            spinner.classList.remove('hidden');
+            buttonText.textContent = 'Verifying...';
+
+            // Switch to verify tab
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('[data-tab="verify"]').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById('verify-tab').classList.remove('hidden');
+
+            // Simulate the verification process
+            setTimeout(() => {
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Verify Document';
+
+                // Show verification result (always verified for existing documents)
+                showVerificationResult(true, name, hash);
+            }, 2000);
+        }
+
+        function showVerificationResult(isVerified, name, hash = null) {
+            const resultDiv = document.getElementById('verification-result');
+            const resultContent = document.getElementById('result-content');
+
+            if (isVerified) {
+                resultContent.innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="font-semibold">Document Verified Successfully</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Document Name</p>
+                            <p class="font-medium">${name}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Hash</p>
+                            <p class="font-medium font-mono">${hash || '0x' + Math.random().toString(16).substr(2, 64)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Notarization Date</p>
+                            <p class="font-medium">${new Date().toLocaleString()}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Block Number</p>
+                            <p class="font-medium">#${Math.floor(Math.random() * 17500000 + 500000)}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultContent.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="font-semibold">Document Verification Failed</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">This document does not match the notarized version on the blockchain. It may have been altered or was never notarized.</p>
+                `;
+            }
+
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>
