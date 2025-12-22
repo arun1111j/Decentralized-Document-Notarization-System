@@ -151,7 +151,12 @@ The Decentralized Document Notarization System successfully demonstrates a viabl
 - **Transparency**: Publicly auditable notarization records without compromising document privacy
 - **Trust Minimization**: Self-executing smart contracts replace centralized trust models
 
+
 This project establishes a foundation for future developments in decentralized trust services and contributes to the broader adoption of blockchain technology in legal and business applications.
+
+## Demo 
+https://notarize-anywhere.lovable.app/
+
 
 ## Articles Published / References
 
